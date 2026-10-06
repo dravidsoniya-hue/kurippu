@@ -3,18 +3,36 @@ import axios from 'axios';
 // In production (Vercel/Render), frontend & backend share the same domain via rewrites.
 // Relative baseURL means axios calls /api/... which routes to the backend automatically.
 // In local dev, fall back to localhost:8000 (Vite proxy also handles this).
-const API_BASE = import.meta.env.VITE_API_URL !== undefined && import.meta.env.VITE_API_URL !== ''
-  ? import.meta.env.VITE_API_URL
-  : (import.meta.env.DEV ? 'http://localhost:8000' : '');
+export const getApiBase = (): string => {
+  const custom = typeof window !== 'undefined' ? localStorage.getItem('kurippu_api_url') : null;
+  if (custom && custom.trim() !== '') return custom.trim().replace(/\/+$/, '');
 
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl && envUrl.trim() !== '') return envUrl.trim().replace(/\/+$/, '');
+
+  if (import.meta.env.DEV) return 'http://localhost:8000';
+
+  return '';
+};
+
+export const setApiBase = (url: string) => {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('kurippu_api_url', url.trim().replace(/\/+$/, ''));
+    api.defaults.baseURL = url.trim().replace(/\/+$/, '');
+  }
+};
 
 const api = axios.create({
-  baseURL: API_BASE,
+  baseURL: getApiBase(),
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Attach JWT token to every request
+// Attach JWT token & latest baseURL to every request
 api.interceptors.request.use((config) => {
+  const currentBase = getApiBase();
+  if (currentBase) {
+    config.baseURL = currentBase;
+  }
   const token = localStorage.getItem('kurippu_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;

@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Spinner } from './components/ui';
+import { BackendBanner } from './components/BackendBanner';
 
 // Lazy-load pages for performance
 const LandingPage = React.lazy(() => import('./pages/LandingPage'));
@@ -43,6 +44,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <HashRouter>
+        <BackendBanner />
         <Suspense fallback={<PageLoader />}>
           <Routes>
             {/* Public Routes */}
