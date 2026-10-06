@@ -66,6 +66,17 @@ app.include_router(analytics.router)
 app.include_router(users.router)
 
 
+@app.get("/")
+async def root():
+    return {
+        "status": "online",
+        "app": "KURIPPU API",
+        "version": "1.0.0",
+        "docs": "/docs",
+        "health": "/health",
+    }
+
+
 @app.get("/health")
 async def health_check():
     return {
